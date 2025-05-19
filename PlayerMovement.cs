@@ -4,17 +4,38 @@ using UnityEngine;
 
 public class Movement : MonoBehaviour
 {
-    public float movespeed;
-    public Rigidbody2D rb;
-    private Vector2 moveDirection;
+    [SerializeField] float movespeed;
+    [SerializeField] Rigidbody2D rb;
+    [SerializeField] Vector2 moveDirection;
+    [Header("Dash Settings")]
+    [SerializeField] float dashSpeed = 10;
+    [SerializeField] float dashDuration = 1;
+    [SerializeField] float dashCooldown = 1;
+    bool isDashing;
+    bool canDash = true;
 
-    // Update is called once per frame
+    private void Start()
+    {
+        canDash = true;
+    }
     void Update()
     {
+        if (isDashing)
+        {
+            return;
+        }
         ProcessInputs();
+        if (Input.GetKeyDown(KeyCode.Space) && canDash)
+        {
+            StartCoroutine(Dash());
+        }
     }
     void FixedUpdate()
     {
+        if (isDashing)
+        {
+            return;
+        }
         Move();
     }
     void ProcessInputs()
@@ -26,5 +47,15 @@ public class Movement : MonoBehaviour
     void Move()
     {
         rb.velocity = new Vector2(moveDirection.x * movespeed, moveDirection.y * movespeed);
+    }
+    private IEnumerator Dash()
+    {
+        canDash = false;
+        isDashing = true;
+        rb.velocity = new Vector2(moveDirection.x*dashSpeed,moveDirection.y*dashSpeed);
+        yield return new WaitForSeconds(dashDuration);
+        isDashing = false;
+        yield return new WaitForSeconds(dashCooldown);
+        canDash = true;
     }
 }
